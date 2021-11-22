@@ -1,50 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_test/hooks/scroll_controller_for_animation_hook.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends HookWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
-  late ScrollController _scrollController;
-  late AnimationController _hideFabAnimationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-    _hideFabAnimationController = AnimationController(
-      vsync: this,
+  Widget build(BuildContext context) {
+    final hideFabAnimationController = useAnimationController(
       duration: kThemeAnimationDuration,
-      value: 1,
+      initialValue: 1,
     );
 
-    _scrollController.addListener(() {
-      switch (_scrollController.position.userScrollDirection) {
-        case ScrollDirection.forward:
-          _hideFabAnimationController.forward();
-          break;
-        case ScrollDirection.reverse:
-          _hideFabAnimationController.reverse();
-          break;
-        case ScrollDirection.idle:
-          break;
-      }
-    });
-  }
+    final scrollController = useScrollControllerForAnimation(
+      hideFabAnimationController,
+    );
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Let's Scroll"),
       ),
       body: ListView(
-        controller: _scrollController,
+        controller: scrollController,
         children: [
           for (int i = 0; i < 5; i++)
             const Card(
@@ -56,9 +33,9 @@ class _HomePageState extends State<HomePage>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FadeTransition(
-        opacity: _hideFabAnimationController,
+        opacity: hideFabAnimationController,
         child: ScaleTransition(
-          scale: _hideFabAnimationController,
+          scale: hideFabAnimationController,
           child: FloatingActionButton.extended(
             onPressed: () {},
             label: const Text('Useless Floating Action Button'),
@@ -66,12 +43,5 @@ class _HomePageState extends State<HomePage>
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _hideFabAnimationController.dispose();
-    super.dispose();
   }
 }
